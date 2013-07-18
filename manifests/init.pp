@@ -10,27 +10,29 @@
 #       fact { "su_restricted": value => "true" }
 #
 
-define fact ($ensure=present,
-                     $value='NOSRC') {
-    $factsdir = "/var/lib/puppet/sufact"
-    case $ensure {
-        absent: {
-            file { "$factsdir/$name": ensure => absent }
-        }
-        present: {
-            case $value {
-                'NOSRC': {
-                    fail "value required for fact define"
-                }
-                default: {
-                    file { "$factsdir/$name": 
-                        content => "$value\n",
-                        require => File[$factsdir],
-                    }
-                }
-            }
-        }
-        default: { crit "Invalid ensure value: $ensure." }
+define fact (
+  $ensure=present,
+  $value='NOSRC'
+) {
+  $factsdir = "/var/lib/puppet/sufact"
+  case $ensure {
+    absent: {
+      file { "$factsdir/$name": ensure => absent }
     }
+    present: {
+      case $value {
+        'NOSRC': {
+          fail "value required for fact define"
+        }
+        default: {
+          file { "$factsdir/$name":
+            content => "$value\n",
+            require => File[$factsdir],
+          }
+        }
+      }
+    }
+  default: { crit "Invalid ensure value: $ensure." }
+  }
 
 }
