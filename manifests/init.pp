@@ -14,7 +14,7 @@ define fact (
   $ensure=present,
   $value='NOSRC'
 ) {
-  $factsdir = '/var/lib/puppet/sufact'
+  $factsdir = "${::puppet_vardir}/sufact"
   case $ensure {
     absent: {
       file { "${factsdir}/${name}": ensure => absent }
@@ -32,7 +32,7 @@ define fact (
         }
       }
     }
-  default: { crit "Invalid ensure value: ${ensure}." }
+    default: { crit "Invalid ensure value: ${ensure}." }
   }
 
 }

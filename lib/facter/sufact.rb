@@ -1,5 +1,6 @@
 # handle SU facts
-path="/var/lib/puppet/sufact"
+path=File.join(Puppet[:vardir],"sufact")
+
 
 if File.directory? "#{path}"
   Dir.foreach(path) do |entry|
