@@ -14,7 +14,10 @@ define fact (
   $ensure=present,
   $value='NOSRC'
 ) {
-  $factsdir = "${::puppet_vardir}/sufact"
+  include fact::setup
+
+  $factsdir = $fact::setup::factsdir
+
   case $ensure {
     absent: {
       file { "${factsdir}/${name}": ensure => absent }
