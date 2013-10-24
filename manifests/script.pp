@@ -6,17 +6,22 @@
 #       fact::text { "su_restricted": value => "true" }
 #
 
-define fact::text (
-  $ensure = present,
-  $value  = undef
+define fact::script (
+  $ensure  = present,
+  $source  = undef,
+  $content = undef
 ) {
   include fact
 
   $factsdir = $fact::factsdir
 
-  $filepath = "${factsdir}/${name}.txt"
+  $filepath = "${factsdir}/${name}"
 
-  validate_string($value)
+  if(!$source and !$content){
+    fail("fact::script['${name}'' requires a source or content")
+  }
+
+  validate_string($content, $source)
 
   case $ensure {
     absent: {
@@ -29,10 +34,11 @@ define fact::text (
         }
         default: {
           file { $filepath:
-            content => inline_template('<%= @name %>=<%= @value %>'),
+            content => $content,
+            source  => $source,
             owner   => $::id,
             group   => $fact::root_group,
-            mode    => '0644',
+            mode    => '0755',
             require => File[$factsdir],
           }
         }
