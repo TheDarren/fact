@@ -1,47 +1,26 @@
-# Provide arbitrary named facts - cannot match name of facter plugin (from
-# module path)
-#
-#
-# Example
-#
-#       fact { "su_sysadmin0": value => "SunetID" }
-#       fact { "su_sysadmin1": value => "SunetID2" }
-#       fact { "su_support": value => "IDG" }
-#       fact { "su_restricted": value => "true" }
-#
-
-define fact (
-  $ensure = present,
-  $value  = unset
+class fact(
+  $facterdir = '/etc/facter'
 ) {
-  include fact::setup
+  $factsdir = "${facterdir}/facts.d"
 
-  $factsdir = $fact::setup::factsdir
+  $root_group = $::id ? {
+    root    => 0,
+    default => $::id
+  }
 
-  $filepath = "${factsdir}/${name}.txt"
+  file { $facterdir:
+    ensure => directory,
+    owner  => $::id,
+    group  => $root_group,
+    mode   => '0755',
+  }
 
-  validate_string($value)
-
-  case $ensure {
-    absent: {
-      file { $filepath: ensure => absent }
-    }
-    present: {
-      case $value {
-        'NOSRC': {
-          fail 'value required for fact define'
-        }
-        default: {
-          file { $filepath:
-            content => inline_template('<%= @name %>=<%= @value %>'),
-            owner   => $::id,
-            group   => $fact::setup::root_group,
-            mode    => '0644',
-            require => File[$factsdir],
-          }
-        }
-      }
-    }
-    default: { crit "Invalid ensure value: ${ensure}." }
+  file { $factsdir:
+    ensure  => directory,
+    purge   => true,
+    recurse => true,
+    owner   => $::id,
+    group   => $root_group,
+    mode    => '0755',
   }
 }
