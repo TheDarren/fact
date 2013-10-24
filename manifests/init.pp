@@ -11,16 +11,20 @@
 #
 
 define fact (
-  $ensure=present,
-  $value='NOSRC'
+  $ensure = present,
+  $value  = unset
 ) {
   include fact::setup
 
   $factsdir = $fact::setup::factsdir
 
+  $filepath = "${factsdir}/${name}.txt"
+
+  validate_string($value)
+
   case $ensure {
     absent: {
-      file { "${factsdir}/${name}": ensure => absent }
+      file { $filepath: ensure => absent }
     }
     present: {
       case $value {
@@ -28,8 +32,11 @@ define fact (
           fail 'value required for fact define'
         }
         default: {
-          file { "${factsdir}/${name}":
-            content => "${value}\n",
+          file { $filepath:
+            content => inline_template('<%= @name %>=<%= @value %>'),
+            owner   => $::id,
+            group   => $fact::setup::root_group,
+            mode    => '0644',
             require => File[$factsdir],
           }
         }
@@ -37,5 +44,4 @@ define fact (
     }
     default: { crit "Invalid ensure value: ${ensure}." }
   }
-
 }

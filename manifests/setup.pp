@@ -1,15 +1,25 @@
-class fact::setup {
-  $factsdir = "${::puppet_vardir}/sufact"
+class fact::setup(
+  $facterdir = '/etc/facter'
+) {
+  $factsdir = "${facterdir}/facts.d"
 
-  $root_group = $id ? {
+  $root_group = $::id ? {
     root    => 0,
-    default => $id
+    default => $::id
+  }
+
+  file { $facterdir:
+    ensure => directory,
+    owner  => $::id,
+    group  => $root_group,
+    mode   => '0755',
   }
 
   file { $factsdir:
     ensure => directory,
-    group  => $root_group,
-    mode   => '0750',
+    purge  => true,
     owner  => $::id,
+    group  => $root_group,
+    mode   => '0755',
   }
 }
